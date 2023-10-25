@@ -1,6 +1,8 @@
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StockTracking.Data;
+using StockTracking.Models;
 
 namespace StockTracking
 {
@@ -21,6 +23,10 @@ namespace StockTracking
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
 
+            builder.Services.AddIdentity<IUser, IdentityRole>()
+                    .AddEntityFrameworkStores<DataContext>();
+               
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -32,6 +38,7 @@ namespace StockTracking
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

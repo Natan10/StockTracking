@@ -10,7 +10,7 @@ namespace StockTracking.Services.Auth
 {
     public interface ITokenService
     {
-        public string GenerateJwtToken(int UserId, EEmployeeRole role);
+        public string GenerateJwtToken(string userId, EEmployeeRole role);
     }
 
     public class TokenService : ITokenService
@@ -22,11 +22,11 @@ namespace StockTracking.Services.Auth
             _options = options.Value;
         }
 
-        public string GenerateJwtToken(int userId, EEmployeeRole role)
+        public string GenerateJwtToken(string userId, EEmployeeRole role)
         {
             var claims = new List<Claim> { 
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim("Role", role.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim("role", role.ToString()),
             };
                 
             var tokenHandler = new JwtSecurityTokenHandler();

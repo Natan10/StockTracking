@@ -9,8 +9,8 @@ namespace StockTracking.Services.Auth
 {
     public interface IAuthService
     {
-        Task<ApiResponse<Employee>> RegisterEmployee(RegisterEmployeeDTO registerEmployee);
-        Task<string> LoginEmployee(LoginEmployeeDTO loginEmployee);
+        Task<ApiResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee);
+        Task<ApiResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee);
     }
 
     public class AuthService : IAuthService
@@ -18,28 +18,69 @@ namespace StockTracking.Services.Auth
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly ITokenService _tokenService;
 
         public AuthService(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
-            IEmployeeRepository employeeRepository
+            IEmployeeRepository employeeRepository,
+            ITokenService tokenService
         )
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _employeeRepository = employeeRepository;
+            _tokenService = tokenService;
         }
 
-        public Task<string> LoginEmployee(LoginEmployeeDTO loginEmployee)
+        public async Task<ApiResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee)
         {
-            throw new NotImplementedException();
+            var apiResponse = new ApiResponse<object>();
+
+            try
+            {
+                var userIdentity = await _userManager.FindByEmailAsync(loginEmployee.Email);
+
+                
+                if(userIdentity == null)
+                {
+                    apiResponse.Errors = new[] { "Funcionário não encontrado" };
+                    return apiResponse;
+                }
+
+                var isValidPassword = await _userManager.CheckPasswordAsync(userIdentity, loginEmployee.Password);
+                if (!isValidPassword)
+                {
+                    apiResponse.Errors = new[] { "Email ou senha inválidos" };
+                    return apiResponse;
+                }
+
+                var employee = await _employeeRepository.GetEmployeeById(userIdentity.Id);
+
+                if (employee == null)
+                {
+                    apiResponse.Errors = new[] { "Funcionário não encontrado" };
+                    return apiResponse;
+                }
+
+                var token = _tokenService.GenerateJwtToken(employee.Id, employee.Role);
+
+         
+                apiResponse.Success = true;
+                apiResponse.Data = new { Token = token };
+                return apiResponse;
+            }
+            catch( Exception ex ) {
+                apiResponse.Errors = new[] { ex.Message };
+                return apiResponse;
+            }
         }
 
-        public async Task<ApiResponse<Employee>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
+        public async Task<ApiResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
         {
             try
             {
-                var apiResponse = new ApiResponse<Employee>();
+                var apiResponse = new ApiResponse<EmployeeDTO>();
 
                 var user = new IdentityUser
                 {
@@ -63,7 +104,11 @@ namespace StockTracking.Services.Auth
                     var createdEmployee = await _employeeRepository.CreateEmployee(newEmployee);
 
                     apiResponse.Success = true;
-                    apiResponse.Data = createdEmployee;
+                    apiResponse.Data = new EmployeeDTO { 
+                        Id = newEmployee.Id,
+                        Username = createdUser.UserName ?? createdUser.Email,
+                        Role = newEmployee.Role,
+                    };
 
                     return apiResponse;
                 }
@@ -76,7 +121,7 @@ namespace StockTracking.Services.Auth
             }
             catch(Exception ex)
             {
-                return new ApiResponse<Employee> {
+                return new ApiResponse<EmployeeDTO> {
                     Errors = new List<string> { ex.Message }
                 };
             }

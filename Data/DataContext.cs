@@ -9,9 +9,14 @@ namespace StockTracking.Data
         public DataContext(DbContextOptions<DataContext> options):base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Stock> Stocks { get; set; }
+        public DbSet<StockItem> StockItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Stock>()
+                .HasAlternateKey(e => e.Name);
+
             base.OnModelCreating(builder);
         }
         

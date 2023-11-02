@@ -28,8 +28,14 @@ namespace StockTracking.Services.Stock
             try
             {
                 var stock = await _stockRepository.CreateStock(newStock);
-            
-                serviceResponse.Data = _mapper.Map<StockDTO>(stock);
+
+                var stockMapper = _mapper.Map<StockDTO>(stock);
+
+                List<StockItemDTO> stockItems = stock.StockItems?.Select(stockItem => _mapper.Map<StockItemDTO>(stockItem)).ToList();
+                
+                stockMapper.StockItems = stockItems;
+
+                serviceResponse.Data = stockMapper; 
                 serviceResponse.Success = true;
 
                 return serviceResponse;

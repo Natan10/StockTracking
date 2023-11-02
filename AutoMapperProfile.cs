@@ -9,6 +9,7 @@ namespace StockTracking
         public AutoMapperProfile()
         {
             CreateMap<Stock, StockDTO>();
+            CreateMap<StockItem, StockItemDTO>();
         }
     }
 }

@@ -9,6 +9,6 @@ namespace StockTracking.DTOs.Stock
 
         public string? Description { get; set; }
 
-        public List<StockItem> StockItems { get; set; }
+        public List<StockItemDTO> StockItems { get; set; }
     }
 }

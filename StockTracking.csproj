@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Repositories\NovaPasta\**" />
-    <Content Remove="Repositories\NovaPasta\**" />
-    <EmbeddedResource Remove="Repositories\NovaPasta\**" />
-    <None Remove="Repositories\NovaPasta\**" />
+    <Compile Remove="Repositories\NovaPasta1\**" />
+    <Content Remove="Repositories\NovaPasta1\**" />
+    <EmbeddedResource Remove="Repositories\NovaPasta1\**" />
+    <None Remove="Repositories\NovaPasta1\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,10 +31,6 @@
     <PackageReference Include="Npgsql" Version="7.0.6" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repositories\NovaPasta1\" />
   </ItemGroup>
 
 </Project>

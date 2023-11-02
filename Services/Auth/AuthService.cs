@@ -9,8 +9,8 @@ namespace StockTracking.Services.Auth
 {
     public interface IAuthService
     {
-        Task<ApiResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee);
-        Task<ApiResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee);
+        Task<ServiceResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee);
+        Task<ServiceResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee);
     }
 
     public class AuthService : IAuthService
@@ -33,9 +33,9 @@ namespace StockTracking.Services.Auth
             _tokenService = tokenService;
         }
 
-        public async Task<ApiResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee)
+        public async Task<ServiceResponse<object>> LoginEmployee(LoginEmployeeDTO loginEmployee)
         {
-            var apiResponse = new ApiResponse<object>();
+            var ServiceResponse = new ServiceResponse<object>();
 
             try
             {
@@ -44,43 +44,43 @@ namespace StockTracking.Services.Auth
                 
                 if(userIdentity == null)
                 {
-                    apiResponse.Errors = new[] { "Funcionário não encontrado" };
-                    return apiResponse;
+                    ServiceResponse.Errors = new[] { "Funcionário não encontrado" };
+                    return ServiceResponse;
                 }
 
                 var isValidPassword = await _userManager.CheckPasswordAsync(userIdentity, loginEmployee.Password);
                 if (!isValidPassword)
                 {
-                    apiResponse.Errors = new[] { "Email ou senha inválidos" };
-                    return apiResponse;
+                    ServiceResponse.Errors = new[] { "Email ou senha inválidos" };
+                    return ServiceResponse;
                 }
 
                 var employee = await _employeeRepository.GetEmployeeById(userIdentity.Id);
 
                 if (employee == null)
                 {
-                    apiResponse.Errors = new[] { "Funcionário não encontrado" };
-                    return apiResponse;
+                    ServiceResponse.Errors = new[] { "Funcionário não encontrado" };
+                    return ServiceResponse;
                 }
 
                 var token = _tokenService.GenerateJwtToken(employee.Id, employee.Role);
 
          
-                apiResponse.Success = true;
-                apiResponse.Data = new { Token = token };
-                return apiResponse;
+                ServiceResponse.Success = true;
+                ServiceResponse.Data = new { Token = token };
+                return ServiceResponse;
             }
             catch( Exception ex ) {
-                apiResponse.Errors = new[] { ex.Message };
-                return apiResponse;
+                ServiceResponse.Errors = new[] { ex.Message };
+                return ServiceResponse;
             }
         }
 
-        public async Task<ApiResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
+        public async Task<ServiceResponse<EmployeeDTO>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
         {
             try
             {
-                var apiResponse = new ApiResponse<EmployeeDTO>();
+                var ServiceResponse = new ServiceResponse<EmployeeDTO>();
 
                 var user = new IdentityUser
                 {
@@ -103,25 +103,25 @@ namespace StockTracking.Services.Auth
                     };
                     var createdEmployee = await _employeeRepository.CreateEmployee(newEmployee);
 
-                    apiResponse.Success = true;
-                    apiResponse.Data = new EmployeeDTO { 
+                    ServiceResponse.Success = true;
+                    ServiceResponse.Data = new EmployeeDTO { 
                         Id = newEmployee.Id,
                         Username = createdUser.UserName ?? createdUser.Email,
                         Role = newEmployee.Role,
                     };
 
-                    return apiResponse;
+                    return ServiceResponse;
                 }
      
                 var errors = resultCreateIdentityUser.Errors.Select(e => e.Description)
                 .Concat(resultAddClaimRole.Errors.Select(e => e.Description));
 
-                apiResponse.Errors = errors;
-                return apiResponse;
+                ServiceResponse.Errors = errors;
+                return ServiceResponse;
             }
             catch(Exception ex)
             {
-                return new ApiResponse<EmployeeDTO> {
+                return new ServiceResponse<EmployeeDTO> {
                     Errors = new List<string> { ex.Message }
                 };
             }

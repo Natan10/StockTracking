@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StockTracking.Data;
 using StockTracking.Models;
+using StockTracking.Repositories.Exceptions;
 
 namespace StockTracking.Repositories
 {
@@ -23,7 +24,7 @@ namespace StockTracking.Repositories
 
         public async Task<Employee> GetEmployeeById(string id) {
             var employee = await _context.Employees.FirstOrDefaultAsync(x => x.Id == id); 
-            return employee is null ? throw new Exception("Funcionario nao encontrado.") : employee;
+            return employee is null ? throw new NotFoundException("Funcionario nao encontrado.") : employee;
         }
 
         public async Task<List<Employee>> GetAll()

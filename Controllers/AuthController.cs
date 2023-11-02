@@ -21,9 +21,9 @@ namespace StockTracking.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<ActionResult<ApiResponse<object>>> LoginEmployee(LoginEmployeeDTO loginEmployeeDTO)
+        public async Task<ActionResult<ServiceResponse<object>>> LoginEmployee(LoginEmployeeDTO loginEmployeeDTO)
         {
-            var response = new ApiResponse<ApiResponse<object>>();
+            var response = new ServiceResponse<object>();
             if(!ModelState.IsValid)
             {
                 response.Errors = ModelState.Values.SelectMany(e => e.Errors).Select(e => e.ErrorMessage);
@@ -46,9 +46,9 @@ namespace StockTracking.Controllers
         [HttpPost]
         [Route("Register")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ActionResult<ApiResponse<Employee>>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
+        public async Task<ActionResult<ServiceResponse<Employee>>> RegisterEmployee(RegisterEmployeeDTO registerEmployee)
         {
-            var response = new ApiResponse<Employee>();
+            var response = new ServiceResponse<Employee>();
 
             if(!ModelState.IsValid)
             {

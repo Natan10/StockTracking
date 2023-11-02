@@ -1,6 +1,8 @@
-﻿namespace StockTracking.Models
+﻿using StockTracking.Models;
+
+namespace StockTracking.DTOs.Stock
 {
-    public class Stock : BaseEntity
+    public class StockDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }

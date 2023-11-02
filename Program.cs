@@ -10,6 +10,7 @@ using StockTracking.Data;
 using StockTracking.Config;
 using StockTracking.Services.Auth;
 using StockTracking.Repositories;
+using StockTracking.Services.Stock;
 
 namespace StockTracking
 {
@@ -64,13 +65,17 @@ namespace StockTracking
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                     .AddEntityFrameworkStores<DataContext>();
 
-            // Repositories
-            
+            // AutoMapper
+            builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
             // Services
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IStockService, StockService>();
+
+            // Repositories
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IStockRepository, StockRepository>();
 
             // JWT
             var jwtOptionsSection = builder.Configuration.GetSection("JwtOptions");

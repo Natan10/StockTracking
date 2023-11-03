@@ -10,6 +10,8 @@ namespace StockTracking
         {
             CreateMap<Stock, StockDTO>();
             CreateMap<StockItem, StockItemDTO>();
+            CreateMap<StockItem[], List<StockItemDTO>>();
+                
         }
     }
 }

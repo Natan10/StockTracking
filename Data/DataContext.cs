@@ -17,6 +17,9 @@ namespace StockTracking.Data
             builder.Entity<Stock>()
                 .HasAlternateKey(e => e.Name);
 
+            builder.Entity<StockItem>()
+                .HasAlternateKey(e => e.Code);
+
             base.OnModelCreating(builder);
         }
         

@@ -1,16 +1,11 @@
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi.Models;
 
 using StockTracking.Data;
-using StockTracking.Config;
-using StockTracking.Services.Auth;
 using StockTracking.Repositories;
-using StockTracking.Services.Stock;
+using StockTracking.Config.Extensions;
 
 namespace StockTracking
 {
@@ -25,7 +20,7 @@ namespace StockTracking
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            
+     
             builder.Services.AddSwaggerGen(o =>
             {
                 o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -65,45 +60,19 @@ namespace StockTracking
             builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                     .AddEntityFrameworkStores<DataContext>();
 
-            // AutoMapper
+
+            builder.Services.AddSectionsExtension(builder.Configuration);
+
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-            // Services
-            builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IStockService, StockService>();
+            builder.Services.AddServicesExtension();
 
             // Repositories
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IStockRepository, StockRepository>();
-
-            // JWT
-            var jwtOptionsSection = builder.Configuration.GetSection("JwtOptions");
-            
-            // configure jwt options in dependency injection container
-            builder.Services.Configure<JwtOptions>(jwtOptionsSection);
-
-            var jwtOptions = jwtOptionsSection.Get<JwtOptions>();
-            var key = Encoding.UTF8.GetBytes(jwtOptions.SecurityKey);
-
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-
-                        IssuerSigningKey = new SymmetricSecurityKey(key)
-                    };
-                });
-
+ 
+            builder.Services.AddAuthenticationExtension(builder.Configuration);
+           
             builder.Services.Configure<IdentityOptions>(opt =>
             {
                 // Password Settings

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StockTracking.Data;
-using StockTracking.DTOs;
 using StockTracking.DTOs.Stock;
 using StockTracking.Models;
 using StockTracking.Repositories.Exceptions;
@@ -16,10 +15,11 @@ namespace StockTracking.Repositories
 
         public Task<StockItem> UpdateStockItem(int stockItemId, UpdateStockItemDTO updateStockItem);
 
+        public Task<StockItem> GetStockItemById(int stockItemId);
+
         public Task DeleteStockItem(int stockItemId);
 
         public Task<(int totalPages, List<StockItem> stockItems)> GetAllStockItems(int currentPage, int numberOfRecordPerPage);
-
     }
 
     public class StockRepository : IStockRepository
@@ -101,6 +101,13 @@ namespace StockTracking.Repositories
                 .ToListAsync();
 
             return (totalPages, stockItems);
+        }
+
+        public async Task<StockItem> GetStockItemById(int stockItemId)
+        {
+            var stockItem = await _context.StockItems.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
+
+            return stockItem;
         }
     }
 }

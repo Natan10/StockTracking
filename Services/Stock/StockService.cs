@@ -17,6 +17,8 @@ namespace StockTracking.Services.Stock
         public Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId);
 
         public Task<Pagination<StockItemDTO>> GetAllStockItems(int currentPage, int numberOfRecordPerPage);
+
+        public Task<ServiceResponse<StockItemDTO>> GetStockItemById(int stockItemId);
     }
 
     public class StockService : IStockService
@@ -126,7 +128,6 @@ namespace StockTracking.Services.Stock
         {
             var repositoryResponse = await _stockRepository.GetAllStockItems(currentPage, numberOfRecordPerPage);
 
-            //var stockItems = repositoryResponse.stockItems.Select(e => _mapper.Map<StockItemDTO>(e)).ToList();
             var stockItems = _mapper.Map<List<StockItemDTO>>(repositoryResponse.stockItems);
 
             return new Pagination<StockItemDTO>
@@ -136,6 +137,24 @@ namespace StockTracking.Services.Stock
                 Items = stockItems,
                 PageSize = numberOfRecordPerPage
             };        
+        }
+
+        public async Task<ServiceResponse<StockItemDTO>> GetStockItemById(int stockItemId)
+        {
+            var serviceResponse = new ServiceResponse<StockItemDTO>();
+            try
+            {
+                var stockItem = await _stockRepository.GetStockItemById(stockItemId);
+
+                serviceResponse.Success = true;
+                serviceResponse.Data = _mapper.Map<StockItemDTO>(stockItem);
+
+                return serviceResponse;
+            } catch(Exception ex)
+            {
+                serviceResponse.Errors = new[] { ex.Message };
+                return serviceResponse;
+            }
         }
     }
 }

@@ -98,9 +98,23 @@ namespace StockTracking.Controllers
         [Route("/[controller]/StockItem")]
         public async Task<ActionResult<Pagination<StockItemDTO>>> GetAllStockItems([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
         {
-            var serviceResponse = await _stockService.GetAllStockItems(currentPage, pageSize);
+            var response = await _stockService.GetAllStockItems(currentPage, pageSize);
 
-            return Ok(serviceResponse);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("/[controller]/StockItem/{stockItemId:int}")]
+        public async Task<ActionResult<ServiceResponse<StockItemDTO>>> GetStockItemById(int stockItemId)
+        {
+            var response = await _stockService.GetStockItemById(stockItemId);
+
+            if(response.Success)
+            {
+                return Ok(response);
+            }
+
+            return NotFound(response);
         }
     }
 }

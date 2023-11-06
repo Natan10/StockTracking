@@ -12,8 +12,22 @@ namespace StockTracking.Data
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<StockItem> StockItems { get; set; }
 
+        public DbSet<Solicitation> Solicitations { get; set; }
+
+        public DbSet<SolicitationItem> SolicitationItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Employee>()
+                .HasMany(e => e.ReviewerSolicitations)
+                .WithOne(e => e.Reviewer)
+                .HasForeignKey(e => e.ReviewerId);
+
+            builder.Entity<Employee>()
+                .HasMany(e => e.RequesterSolicitations)
+                .WithOne(e => e.Requester)
+                .HasForeignKey(e => e.RequesterId);
+
             builder.Entity<Stock>()
                 .HasAlternateKey(e => e.Name);
 

@@ -237,6 +237,67 @@ namespace StockTracking.Migrations
                     b.ToTable("Employees");
                 });
 
+            modelBuilder.Entity("StockTracking.Models.Solicitation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequesterId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReviewerId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequesterId");
+
+                    b.HasIndex("ReviewerId");
+
+                    b.ToTable("Solicitations");
+                });
+
+            modelBuilder.Entity("StockTracking.Models.SolicitationItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProcessedQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequiredQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SolicitationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StockItemId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolicitationId");
+
+                    b.HasIndex("StockItemId");
+
+                    b.ToTable("SolicitationItems");
+                });
+
             modelBuilder.Entity("StockTracking.Models.Stock", b =>
                 {
                     b.Property<int>("Id")
@@ -274,6 +335,7 @@ namespace StockTracking.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -295,6 +357,8 @@ namespace StockTracking.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasAlternateKey("Code");
 
                     b.HasIndex("StockId");
 
@@ -352,6 +416,40 @@ namespace StockTracking.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StockTracking.Models.Solicitation", b =>
+                {
+                    b.HasOne("StockTracking.Models.Employee", "Requester")
+                        .WithMany("RequesterSolicitations")
+                        .HasForeignKey("RequesterId");
+
+                    b.HasOne("StockTracking.Models.Employee", "Reviewer")
+                        .WithMany("ReviewerSolicitations")
+                        .HasForeignKey("ReviewerId");
+
+                    b.Navigation("Requester");
+
+                    b.Navigation("Reviewer");
+                });
+
+            modelBuilder.Entity("StockTracking.Models.SolicitationItem", b =>
+                {
+                    b.HasOne("StockTracking.Models.Solicitation", "Solicitation")
+                        .WithMany("SolicitationItems")
+                        .HasForeignKey("SolicitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StockTracking.Models.StockItem", "StockItem")
+                        .WithMany()
+                        .HasForeignKey("StockItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Solicitation");
+
+                    b.Navigation("StockItem");
+                });
+
             modelBuilder.Entity("StockTracking.Models.StockItem", b =>
                 {
                     b.HasOne("StockTracking.Models.Stock", "Stock")
@@ -361,6 +459,18 @@ namespace StockTracking.Migrations
                         .IsRequired();
 
                     b.Navigation("Stock");
+                });
+
+            modelBuilder.Entity("StockTracking.Models.Employee", b =>
+                {
+                    b.Navigation("RequesterSolicitations");
+
+                    b.Navigation("ReviewerSolicitations");
+                });
+
+            modelBuilder.Entity("StockTracking.Models.Solicitation", b =>
+                {
+                    b.Navigation("SolicitationItems");
                 });
 
             modelBuilder.Entity("StockTracking.Models.Stock", b =>

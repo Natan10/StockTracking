@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using StockTracking.Data;
-using StockTracking.Repositories;
 using StockTracking.Config.Extensions;
 
 namespace StockTracking
@@ -67,10 +66,8 @@ namespace StockTracking
 
             builder.Services.AddServicesExtension();
 
-            // Repositories
-            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            builder.Services.AddScoped<IStockRepository, StockRepository>();
- 
+            builder.Services.AddRepositoriesExtension();
+
             builder.Services.AddAuthenticationExtension(builder.Configuration);
            
             builder.Services.Configure<IdentityOptions>(opt =>

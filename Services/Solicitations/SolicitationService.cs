@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using StockTracking.DTOs;
 using StockTracking.DTOs.Solicitation;
+using StockTracking.DTOs.Stock;
 using StockTracking.Models;
 using StockTracking.Repositories;
 
@@ -9,6 +10,8 @@ namespace StockTracking.Services.Solicitations
     public interface ISolicitationService
     {
         Task<ServiceResponse<SolicitationDTO>> CreateSolicitation(CreateSolicitationDTO solicitationDTO);
+
+        Task<Pagination<SolicitationDTO>> GetAllSolicitations(int currentPage, int numberOfRecordPerPage);
     }
 
     public class SolicitationService : ISolicitationService
@@ -50,6 +53,21 @@ namespace StockTracking.Services.Solicitations
                 serviceResponse.Errors = new[] { ex.Message };
                 return serviceResponse;
             }
+        }
+
+        public async Task<Pagination<SolicitationDTO>> GetAllSolicitations(int currentPage, int numberOfRecordPerPage)
+        {
+            var repositoryResponse = await _solicitationRepository.GetAllSolicitations(currentPage, numberOfRecordPerPage);
+
+            var solicitations = _mapper.Map<List<SolicitationDTO>>(repositoryResponse.solicitations);
+
+            return new Pagination<SolicitationDTO>
+            {
+                CurrentPage = currentPage,
+                TotalPages = repositoryResponse.totalPages,
+                Items = solicitations,
+                PageSize = numberOfRecordPerPage
+            };
         }
     }
 }

@@ -77,6 +77,8 @@ namespace StockTracking.Repositories
 
             var solicitations = await _context.Solicitations
                 .Include(e => e.SolicitationItems)
+                .Include(e => e.Requester)
+                .Include(e => e.Reviewer)
                 .Skip((currentPage - 1) * numberOfRecordPerPage)
                 .Take(numberOfRecordPerPage)
                 .ToListAsync();

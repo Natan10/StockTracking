@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using StockTracking.DTOs;
 using StockTracking.DTOs.Solicitation;
@@ -29,6 +30,13 @@ namespace StockTracking.Controllers
             }
 
            return BadRequest(response);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<Pagination<SolicitationDTO>>> GetAllSolicitations([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
+        {
+            var solicitations = await _solicitationService.GetAllSolicitations(currentPage, pageSize);
+            return Ok(solicitations);
         }
 
     }

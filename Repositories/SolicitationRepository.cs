@@ -10,7 +10,7 @@ namespace StockTracking.Repositories
     {
        Task<Solicitation> CreateSolicitation(Solicitation newSolicitation);
 
-       Task CancelSolicitation(int solicitationId, string reviewerId);
+       Task<Solicitation> CancelSolicitation(int solicitationId, string reviewerId);
 
        Task<(int totalPages, List<Solicitation> solicitations)> GetAllSolicitations(int currentPage, int numberOfRecordPerPage);
     
@@ -27,12 +27,15 @@ namespace StockTracking.Repositories
         }
 
 
-        public async Task CancelSolicitation(int solicitationId, string reviewerId)
+        public async Task<Solicitation> CancelSolicitation(int solicitationId, string reviewerId)
         {
             var reviewer = await _context.Employees.FirstOrDefaultAsync(e => e.Id == reviewerId)
                 ?? throw new NotFoundException("Revisor não encontrado");
             
-            var solicitation = await _context.Solicitations.FirstOrDefaultAsync(e => e.Id == solicitationId)
+            var solicitation = await _context.Solicitations
+                .Include(e => e.Requester)
+                .Include(e => e.SolicitationItems)
+                .FirstOrDefaultAsync(e => e.Id == solicitationId)
                 ?? throw new NotFoundException("Solicitação não encontrada");
 
 
@@ -42,6 +45,8 @@ namespace StockTracking.Repositories
             _context.Solicitations.Update(solicitation);
 
             await _context.SaveChangesAsync();
+
+            return solicitation;
         }
 
         public async Task<Solicitation> CreateSolicitation(Solicitation newSolicitation)

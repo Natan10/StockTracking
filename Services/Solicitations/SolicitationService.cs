@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using StockTracking.DTOs;
 using StockTracking.DTOs.Solicitation;
-using StockTracking.DTOs.Stock;
 using StockTracking.Models;
 using StockTracking.Repositories;
 
@@ -12,6 +11,8 @@ namespace StockTracking.Services.Solicitations
         Task<ServiceResponse<SolicitationDTO>> CreateSolicitation(CreateSolicitationDTO solicitationDTO);
 
         Task<Pagination<SolicitationDTO>> GetAllSolicitations(int currentPage, int numberOfRecordPerPage);
+
+        Task<ServiceResponse<SolicitationDTO>> CancelSolicitation(int solicitationId, string reviewerId);
     }
 
     public class SolicitationService : ISolicitationService
@@ -23,6 +24,23 @@ namespace StockTracking.Services.Solicitations
         {
             _solicitationRepository = solicitationRepository;
             _mapper = mapper;
+        }
+
+        public async Task<ServiceResponse<SolicitationDTO>> CancelSolicitation(int solicitationId, string reviewerId)
+        {
+            var serviceResponse = new ServiceResponse<SolicitationDTO>();
+            try
+            {
+                var solicitation = await _solicitationRepository.CancelSolicitation(solicitationId, reviewerId);
+
+                serviceResponse.Success = true;
+                serviceResponse.Data = _mapper.Map<SolicitationDTO>(solicitation);
+
+                return serviceResponse;
+            }catch(Exception ex) {
+                serviceResponse.Errors = new[] {ex.Message};
+                return serviceResponse;
+            }
         }
 
         public async Task<ServiceResponse<SolicitationDTO>> CreateSolicitation(CreateSolicitationDTO solicitationDTO)

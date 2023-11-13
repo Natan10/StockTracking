@@ -39,5 +39,18 @@ namespace StockTracking.Controllers
             return Ok(solicitations);
         }
 
+        [HttpPut("UpdateSolicitationStatus")]
+        public async Task<ActionResult<ServiceResponse<SolicitationDTO>>> CancelSolicitation([FromQuery] string reviewerId, [FromQuery] int solicitationId)
+        {
+            var response = await _solicitationService.CancelSolicitation(solicitationId, reviewerId);
+
+            if(response.Success)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
+
     }
 }

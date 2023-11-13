@@ -1,4 +1,5 @@
 ﻿using StockTracking.Services.Auth;
+using StockTracking.Services.Solicitations;
 using StockTracking.Services.Stock;
 
 namespace StockTracking.Config.Extensions
@@ -10,6 +11,7 @@ namespace StockTracking.Config.Extensions
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStockService, StockService>();
+            services.AddScoped<ISolicitationService, SolicitationService>();
         }
     }
 }

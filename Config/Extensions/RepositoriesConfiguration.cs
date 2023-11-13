@@ -8,6 +8,7 @@ namespace StockTracking.Config.Extensions
         {
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IStockRepository, StockRepository>();
+            services.AddScoped<ISolicitationRepository, SolicitationRepository>();
         }
     }
 }

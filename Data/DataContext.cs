@@ -11,9 +11,7 @@ namespace StockTracking.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<StockItem> StockItems { get; set; }
-
         public DbSet<Solicitation> Solicitations { get; set; }
-
         public DbSet<SolicitationItem> SolicitationItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)

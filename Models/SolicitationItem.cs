@@ -12,7 +12,6 @@
         
         public Solicitation Solicitation { get; set; }
 
-        
         public int StockItemId { get; set; }
         
         public StockItem  StockItem { get; set; }

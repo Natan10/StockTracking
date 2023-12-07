@@ -1,19 +1,9 @@
-﻿namespace StockTracking.Models
-{
-    public class StockItem : BaseEntity
-    {
-        public int Id { get; set; }
+﻿namespace StockTracking.Models;
 
-        public string Name { get; set; }
+public abstract class StockItem : BaseEntity {
+    public int StockId { get; set; }
 
-        public string Code { get; set; }
+    public virtual Stock Stock { get; set; }
 
-        public int Quantity { get; set; }
-
-        public EStockItemType Type { get; set; } = EStockItemType.MATERIAL;
-
-        public int StockId { get; set; }
-
-        public Stock Stock { get; set; }
-    }
+    public int Quantity { get; set; }
 }

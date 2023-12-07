@@ -2,7 +2,7 @@
 
 namespace StockTracking.Models
 {
-    public class Employee : BaseEntity
+    public class Employee
     {
         public string Id { get; set; }
 
@@ -11,5 +11,9 @@ namespace StockTracking.Models
         public List<Solicitation> ReviewerSolicitations { get; set; } 
 
         public List<Solicitation> RequesterSolicitations { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
     }
 }

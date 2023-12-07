@@ -2,8 +2,6 @@
 {
     public class Solicitation : BaseEntity
     {
-        public int Id { get; set; }
-
         public ESolicitationStatus Status { get; set; }
 
         public string RequesterId { get; set; }

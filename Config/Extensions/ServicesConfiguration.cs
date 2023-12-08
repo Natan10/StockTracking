@@ -1,17 +1,17 @@
 ﻿using StockTracking.Services.Auth;
 using StockTracking.Services.Solicitations;
 using StockTracking.Services.Stock;
+using StockTracking.Services.Stock.Interfaces;
 
-namespace StockTracking.Config.Extensions
+namespace StockTracking.Config.Extensions;
+
+public static class ServicesConfiguration
 {
-    public static class ServicesConfiguration
+    public static void AddServicesExtension(this IServiceCollection services)
     {
-        public static void AddServicesExtension(this IServiceCollection services)
-        {
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IStockService, StockService>();
-            services.AddScoped<ISolicitationService, SolicitationService>();
-        }
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IStockService, StockService>();
+        services.AddScoped<ISolicitationService, SolicitationService>();
     }
 }

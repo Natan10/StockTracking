@@ -13,8 +13,12 @@ namespace StockTracking
             CreateMap<Employee, EmployeeDTO>();
 
             CreateMap<Stock, StockDTO>();
-            CreateMap<StockItem, StockItemDTO>();
-            CreateMap<StockItem[], List<StockItemDTO>>();
+            
+            CreateMap<StockItemEquipment, StockItemEquipmentDTO>();
+            CreateMap<StockItemEquipment[], List<StockItemEquipmentDTO>>();
+
+            CreateMap<StockItemMaterial, StockItemMaterialDTO>();
+            CreateMap<StockItemMaterial[], List<StockItemMaterialDTO>>();
 
             CreateMap<CreateSolicitationDTO, Solicitation>();
             CreateMap<Solicitation, SolicitationDTO>();

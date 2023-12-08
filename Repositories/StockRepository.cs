@@ -1,113 +1,138 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using StockTracking.Data;
 using StockTracking.DTOs.Stock;
 using StockTracking.Models;
 using StockTracking.Repositories.Exceptions;
+using StockTracking.Repositories.Interfaces;
 
-namespace StockTracking.Repositories
+namespace StockTracking.Repositories;
+
+public class StockRepository : IStockRepository
 {
-    public interface IStockRepository
+    private readonly DataContext _context;
+
+    public StockRepository(DataContext context)
     {
-        public Task<Stock> CreateStock(CreateStockDTO stock);
-        public Task DeleteStock(int stockId);
-
-        public Task<StockItem> CreateStockItem(CreateStockItemDTO stockItem);
-
-        public Task<StockItem> UpdateStockItem(int stockItemId, UpdateStockItemDTO updateStockItem);
-
-        public Task<StockItem> GetStockItemById(int stockItemId);
-
-        public Task DeleteStockItem(int stockItemId);
-
-        public Task<(int totalPages, List<StockItem> stockItems)> GetAllStockItems(int currentPage, int numberOfRecordPerPage);
+        _context = context;
     }
 
-    public class StockRepository : IStockRepository
+    public async Task<Stock> CreateStock(CreateStockDTO newStock)
     {
-        private readonly DataContext _context;
-
-        public StockRepository(DataContext context)
+        var stock = new Stock
         {
-            _context = context;
-        }
+            Name = newStock.Name,
+            Description = newStock.Description,
+        };
 
-        public async Task<Stock> CreateStock(CreateStockDTO newStock)
-        {
-            var stock = new Stock
-            {
-                Name = newStock.Name,
-                Description = newStock.Description,
-            };
+        _context.Stocks.Add(stock);
+        await _context.SaveChangesAsync();
 
-            _context.Stocks.Add(stock);
-            await _context.SaveChangesAsync();
+        var createdStock = await _context.Stocks.FirstOrDefaultAsync(e => e.Name == newStock.Name);
 
-            var createdStock = await _context.Stocks.FirstOrDefaultAsync(e => e.Name == newStock.Name);
-            return createdStock;
-        }
-
-        public async Task DeleteStock(int stockId)
-        {
-            var stock = await _context.Stocks.FirstOrDefaultAsync(e => e.Id == stockId) ?? throw new NotFoundException("Estoque não encontrado");
-            _context.Stocks.Remove(stock);
-            await _context.SaveChangesAsync();
-        }
-
-
-        public async Task<StockItem> CreateStockItem(CreateStockItemDTO newStockItem)
-        {
-            var newItem = new StockItem
-            {
-                Name = newStockItem.Name,
-                Type = newStockItem.Type,
-                Quantity = newStockItem.Quantity,
-                Code = newStockItem.Code,
-                StockId = newStockItem.StockId
-            };
-
-            _context.StockItems.Add(newItem);
-            await _context.SaveChangesAsync();
-
-            var stockItem = await _context.StockItems.FirstOrDefaultAsync(e => e.Code == newStockItem.Code);
-
-            return stockItem;
-        }
-
-        public async Task<StockItem> UpdateStockItem(int stockItemId, UpdateStockItemDTO updateStockItem)
-        {
-            var stockItem = await _context.StockItems.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
-            
-            _context.Entry(stockItem).CurrentValues.SetValues(updateStockItem);
-
-            await _context.SaveChangesAsync();
-
-            return stockItem;
-        }
-
-        public async Task DeleteStockItem(int stockItemId)
-        {
-            var stockItem = await _context.StockItems.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
-            var remove = _context.StockItems.Remove(stockItem);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<(int totalPages, List<StockItem> stockItems)> GetAllStockItems(int currentPage, int numberOfRecordPerPage)
-        {
-            var totalPages = _context.StockItems.Count() / numberOfRecordPerPage;
-
-            var stockItems = await _context.StockItems
-                .Skip((currentPage - 1) * numberOfRecordPerPage)
-                .Take(numberOfRecordPerPage)
-                .ToListAsync();
-
-            return (totalPages, stockItems);
-        }
-
-        public async Task<StockItem> GetStockItemById(int stockItemId)
-        {
-            var stockItem = await _context.StockItems.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
-
-            return stockItem;
-        }
+        return createdStock;
     }
+
+    public async Task DeleteStock(long stockId)
+    {
+        var stock = await _context.Stocks.FirstOrDefaultAsync(e => e.Id == stockId) ?? throw new NotFoundException("Estoque não encontrado");
+        _context.Stocks.Remove(stock);
+        await _context.SaveChangesAsync();
+    }
+
+
+    public async Task<StockItemEquipment> CreateStockItemEquipment(StockItemEquipment newStockItemEquipment)
+    {  
+        _context.StockItemEquipments.Add(newStockItemEquipment);
+        await _context.SaveChangesAsync();
+
+        var stockItem = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == newStockItemEquipment.Id);
+
+        return stockItem;
+    }
+
+    public async Task<StockItemMaterial> CreateStockItemMaterial(StockItemMaterial newStockItemMaterial)
+    {
+        _context.StockItemMaterials.Add(newStockItemMaterial);
+        await _context.SaveChangesAsync();
+
+        var stockItem = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == newStockItemMaterial.Id);
+
+        return stockItem;
+    }
+
+
+    public async Task<StockItemEquipment> UpdateStockItemEquipment(long stockItemId, object updateStockItem)
+    {
+        var stockItem = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Equipamento não encontrado no estoque");
+        
+        _context.Entry(stockItem).CurrentValues.SetValues(updateStockItem);
+
+        await _context.SaveChangesAsync();
+
+        return stockItem;
+    }
+
+    public async Task<StockItemMaterial> UpdateStockItemMaterial(long stockItemId, object updateStockItem)
+    {
+        var stockItem = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Material não encontrado no estoque");
+
+        _context.Entry(stockItem).CurrentValues.SetValues(updateStockItem);
+
+        await _context.SaveChangesAsync();
+
+        return stockItem;
+    }
+   
+    public async Task DeleteStockItem(long stockItemId, EStockItemType type)
+    {
+        if(type == EStockItemType.MATERIAL)
+        {
+            var stockItemMaterial = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
+            _context.StockItemMaterials.Remove(stockItemMaterial);
+        } else
+        {
+            var stockItemEquipment = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
+            _context.StockItemEquipments.Remove(stockItemEquipment);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<StockItemEquipment> GetStockEquipmentByParams(long stockItemId)
+    {
+        var stockItem = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Equipamento não encontrado no estoque");
+        return stockItem;
+    }
+
+    public async Task<StockItemMaterial> GetStockMaterialByParams(long stockItemId)
+    {
+        var stockItem = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Material não encontrado no estoque");
+        return stockItem;
+    }
+
+    public async Task<(int totalPages, List<StockItemEquipment> stockItems)> GetAllStockEquipments(int currentPage, int numberOfRecordPerPage)
+    {
+        var totalPages = _context.StockItemEquipments.Count() / numberOfRecordPerPage;
+
+        var stockItems = await _context.StockItemEquipments
+            .Skip((currentPage - 1) * numberOfRecordPerPage)
+            .Take(numberOfRecordPerPage)
+            .ToListAsync();
+
+        return (totalPages, stockItems);
+    }
+
+    public async Task<(int totalPages, List<StockItemMaterial> stockItems)> GetAllStockMaterials(int currentPage, int numberOfRecordPerPage)
+    {
+        var totalPages = _context.StockItemMaterials.Count() / numberOfRecordPerPage;
+
+        var stockItems = await _context.StockItemMaterials
+            .Skip((currentPage - 1) * numberOfRecordPerPage)
+            .Take(numberOfRecordPerPage)
+            .ToListAsync();
+
+        return (totalPages, stockItems);
+    }
+
 }

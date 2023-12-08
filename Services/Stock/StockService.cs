@@ -1,160 +1,248 @@
-﻿using StockTracking.DTOs;
+﻿using AutoMapper;
+
+using StockTracking.DTOs;
 using StockTracking.DTOs.Stock;
-using StockTracking.Repositories;
-using AutoMapper;
+using StockTracking.Models;
+using StockTracking.Repositories.Interfaces;
+using StockTracking.Services.Stock.Interfaces;
 
-namespace StockTracking.Services.Stock
+namespace StockTracking.Services.Stock;
+
+public class StockService : IStockService
 {
-    public interface IStockService
+    private readonly IStockRepository _stockRepository;
+    private readonly IMapper _mapper;
+
+    public StockService(IStockRepository stockRepository, IMapper mapper)
     {
-        public Task<ServiceResponse<StockDTO>> CreateStock(CreateStockDTO newStock);
-        public Task<ServiceResponse<bool>> DeleteStock(int stockId);
+        _stockRepository = stockRepository;
+        _mapper = mapper;
+    }
+    public async Task<ServiceResponse<StockDTO>> CreateStock(CreateStockDTO newStock)
+    {   
+        var serviceResponse = new ServiceResponse<StockDTO>();
+        try
+        {
+            var stock = await _stockRepository.CreateStock(newStock);
 
-        public Task<ServiceResponse<StockItemDTO>> CreateStockItem(CreateStockItemDTO newStockItem);
+            var stockMapper = _mapper.Map<StockDTO>(stock);
 
-        public Task<ServiceResponse<StockItemDTO>> UpdateStockItem(int stockItemId, UpdateStockItemDTO stockItem);
+            serviceResponse.Data = stockMapper; 
+            serviceResponse.Success = true;
 
-        public Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId);
+            return serviceResponse;
 
-        public Task<Pagination<StockItemDTO>> GetAllStockItems(int currentPage, int numberOfRecordPerPage);
-
-        public Task<ServiceResponse<StockItemDTO>> GetStockItemById(int stockItemId);
+        }catch(Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
+        }
     }
 
-    public class StockService : IStockService
+
+    public async Task<ServiceResponse<Boolean>> DeleteStock(int stockId)
     {
-        private readonly IStockRepository _stockRepository;
-        private readonly IMapper _mapper;
-
-        public StockService(IStockRepository stockRepository, IMapper mapper)
+        var serviceResponse = new ServiceResponse<Boolean>();
+        try
         {
-            _stockRepository = stockRepository;
-            _mapper = mapper;
-        }
-        public async Task<ServiceResponse<StockDTO>> CreateStock(CreateStockDTO newStock)
-        {   
-            var serviceResponse = new ServiceResponse<StockDTO>();
-            try
-            {
-                var stock = await _stockRepository.CreateStock(newStock);
+            await _stockRepository.DeleteStock(stockId);
 
-                var stockMapper = _mapper.Map<StockDTO>(stock);
-
-                List<StockItemDTO> stockItems = stock.StockItems?.Select(stockItem => _mapper.Map<StockItemDTO>(stockItem)).ToList();
-                
-                stockMapper.StockItems = stockItems;
-
-                serviceResponse.Data = stockMapper; 
-                serviceResponse.Success = true;
-
-                return serviceResponse;
-
-            }catch(Exception ex)
-            {
-                serviceResponse.Errors = new[] { ex.Message };
-                return serviceResponse;
-            }
-        }
-
-
-        public async Task<ServiceResponse<Boolean>> DeleteStock(int stockId)
+            serviceResponse.Success = true;
+            return serviceResponse;
+        }catch(Exception e)
         {
-            var serviceResponse = new ServiceResponse<Boolean>();
-            try
-            {
-                await _stockRepository.DeleteStock(stockId);
-
-                serviceResponse.Success = true;
-                return serviceResponse;
-            }catch(Exception e)
-            {
-                serviceResponse.Errors = new[] { e.Message };
-                return serviceResponse;
-            }
+            serviceResponse.Errors = new[] { e.Message };
+            return serviceResponse;
         }
+    }
 
-        public async Task<ServiceResponse<StockItemDTO>> CreateStockItem(CreateStockItemDTO newStockItem)
+
+    public async Task<ServiceResponse<StockItemEquipmentDTO>> CreateStockItemEquipment(CreateStockItemEquipmentDTO newStockItem)
+    {
+        var serviceResponse = new ServiceResponse<StockItemEquipmentDTO>();
+        try
         {
-            var serviceResponse = new ServiceResponse<StockItemDTO>();
-            try
+            var equipment = new StockItemEquipment
             {
-               var stockItem = await _stockRepository.CreateStockItem(newStockItem);
-               
-               serviceResponse.Data = _mapper.Map<StockItemDTO>(stockItem);
-               serviceResponse.Success = true;
+               Onu = newStockItem.Onu,
+               Serial = newStockItem.Serial,
+               Quantity = newStockItem.Quantity,
+               StockId = newStockItem.StockId,
+            };
 
-               return serviceResponse;
-            }catch(Exception ex)
-            {
-                serviceResponse.Errors = new[] { ex.Message };
-                return serviceResponse;
-            }
+           var stockItem = await _stockRepository.CreateStockItemEquipment(equipment);
+
+           serviceResponse.Data = _mapper.Map<StockItemEquipmentDTO>(stockItem);
+           serviceResponse.Success = true;
+
+           return serviceResponse;
+        }catch(Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
         }
+    }
 
-        public async Task<ServiceResponse<StockItemDTO>> UpdateStockItem(int stockItemId, UpdateStockItemDTO stockItem)
+    public async Task<ServiceResponse<StockItemMaterialDTO>> CreateStockItemMaterial(CreateStockItemMaterialDTO newStockItem)
+    {
+        var serviceResponse = new ServiceResponse<StockItemMaterialDTO>();
+        try
         {
-            var serviceResponse = new ServiceResponse<StockItemDTO>();
-            try
+            var material = new StockItemMaterial
             {
-                var updateStockItem = await _stockRepository.UpdateStockItem(stockItemId, stockItem);
+               Name = newStockItem.Name,
+               Code = newStockItem.Code,
+               Quantity = newStockItem.Quantity,
+               MeasurementUnit = newStockItem.MeasurementUnit,
+               StockId = newStockItem.StockId
+            };
 
-                serviceResponse.Success = true;
-                serviceResponse.Data = _mapper.Map<StockItemDTO>(updateStockItem);
+            var stockItem = await _stockRepository.CreateStockItemMaterial(material);
 
-                return serviceResponse;
-            }catch(Exception ex)
-            {
-                serviceResponse.Errors = new[] { ex.Message };
-                return serviceResponse;
-            }
+            serviceResponse.Data = _mapper.Map<StockItemMaterialDTO>(stockItem);
+            serviceResponse.Success = true;
+
+            return serviceResponse;
         }
-
-        public async Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId)
+        catch (Exception ex)
         {
-            var serviceResponse = new ServiceResponse<bool>();
-            try
-            {
-                await _stockRepository.DeleteStockItem(stockItemId);
-                serviceResponse.Success = true;
-                return serviceResponse;
-            } catch(Exception ex)
-            {
-                serviceResponse.Errors = new[] { ex.Message };
-                return serviceResponse;
-            }
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
         }
+    }
 
-        public async Task<Pagination<StockItemDTO>> GetAllStockItems(int currentPage, int numberOfRecordPerPage)
+
+    public async Task<ServiceResponse<StockItemEquipmentDTO>> UpdateStockItemEquipment(int stockItemId, UpdateStockItemEquipmentDTO stockItem)
+    {
+        var serviceResponse = new ServiceResponse<StockItemEquipmentDTO>();
+        try
         {
-            var repositoryResponse = await _stockRepository.GetAllStockItems(currentPage, numberOfRecordPerPage);
+            var updateStockItem = new {
+              stockItem.Onu,
+              stockItem.Serial,
+              stockItem.Quantity
+            };
 
-            var stockItems = _mapper.Map<List<StockItemDTO>>(repositoryResponse.stockItems);
+            var equipment = await _stockRepository.UpdateStockItemEquipment(stockItemId, updateStockItem);
 
-            return new Pagination<StockItemDTO>
-            {
-                CurrentPage =  currentPage,
-                TotalPages = repositoryResponse.totalPages,
-                Items = stockItems,
-                PageSize = numberOfRecordPerPage
-            };        
+            serviceResponse.Success = true;
+            serviceResponse.Data = _mapper.Map<StockItemEquipmentDTO>(equipment);
+
+            return serviceResponse;
+        }catch(Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
         }
+    }
 
-        public async Task<ServiceResponse<StockItemDTO>> GetStockItemById(int stockItemId)
+    public async Task<ServiceResponse<StockItemMaterialDTO>> UpdateStockItemMaterial(int stockItemId, UpdateStockItemMaterialDTO stockItem)
+    {
+        var serviceResponse = new ServiceResponse<StockItemMaterialDTO>();
+        try
         {
-            var serviceResponse = new ServiceResponse<StockItemDTO>();
-            try
-            {
-                var stockItem = await _stockRepository.GetStockItemById(stockItemId);
+            var updateStockItem = new {
+                stockItem.Name,
+                stockItem.Code,
+                stockItem.MeasurementUnit,
+                stockItem.Quantity
+            };
 
-                serviceResponse.Success = true;
-                serviceResponse.Data = _mapper.Map<StockItemDTO>(stockItem);
+            var material = await _stockRepository.UpdateStockItemMaterial(stockItemId, updateStockItem);
 
-                return serviceResponse;
-            } catch(Exception ex)
-            {
-                serviceResponse.Errors = new[] { ex.Message };
-                return serviceResponse;
-            }
+            serviceResponse.Success = true;
+            serviceResponse.Data = _mapper.Map<StockItemMaterialDTO>(material);
+
+            return serviceResponse;
+        }
+        catch (Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
+        }
+    }
+
+    public async Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId, EStockItemType type)
+    {
+        var serviceResponse = new ServiceResponse<bool>();
+        try
+        {
+            await _stockRepository.DeleteStockItem(stockItemId, type);
+            serviceResponse.Success = true;
+            return serviceResponse;
+        } catch(Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
+        }
+    }
+
+
+    public async Task<Pagination<StockItemEquipmentDTO>> GetAllEquipments(int currentPage, int numberOfRecordPerPage)
+    {
+        var repositoryResponse = await _stockRepository.GetAllStockEquipments(currentPage, numberOfRecordPerPage);
+
+        var stockItems = _mapper.Map<List<StockItemEquipmentDTO>>(repositoryResponse.stockItems);
+
+        return new Pagination<StockItemEquipmentDTO>
+        {
+            CurrentPage =  currentPage,
+            TotalPages = repositoryResponse.totalPages,
+            Items = stockItems,
+            PageSize = numberOfRecordPerPage
+        };        
+    }
+
+    public async Task<Pagination<StockItemMaterialDTO>> GetAllMaterials(int currentPage, int numberOfRecordPerPage)
+    {
+        var repositoryResponse = await _stockRepository.GetAllStockMaterials(currentPage, numberOfRecordPerPage);
+
+        var stockItems = _mapper.Map<List<StockItemMaterialDTO>>(repositoryResponse.stockItems);
+
+        return new Pagination<StockItemMaterialDTO>
+        {
+            CurrentPage = currentPage,
+            TotalPages = repositoryResponse.totalPages,
+            Items = stockItems,
+            PageSize = numberOfRecordPerPage
+        };
+    }
+
+
+    public async Task<ServiceResponse<StockItemEquipmentDTO>> GetStockEquipmentByParams(int stockItemId)
+    {
+        var serviceResponse = new ServiceResponse<StockItemEquipmentDTO>();
+        try
+        {
+            var stockItem = await _stockRepository.GetStockEquipmentByParams(stockItemId);
+
+            serviceResponse.Success = true;
+            serviceResponse.Data = _mapper.Map<StockItemEquipmentDTO>(stockItem);
+
+            return serviceResponse;
+        } catch(Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
+        }
+    }
+
+    public async Task<ServiceResponse<StockItemMaterialDTO>> GetStockMaterialByParams(int stockItemId)
+    {
+        var serviceResponse = new ServiceResponse<StockItemMaterialDTO>();
+        try
+        {
+            var stockItem = await _stockRepository.GetStockMaterialByParams(stockItemId);
+
+            serviceResponse.Success = true;
+            serviceResponse.Data = _mapper.Map<StockItemMaterialDTO>(stockItem);
+
+            return serviceResponse;
+        }
+        catch (Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
         }
     }
 }

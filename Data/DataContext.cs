@@ -9,9 +9,15 @@ namespace StockTracking.Data
         public DataContext(DbContextOptions<DataContext> options):base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
+
         public DbSet<Stock> Stocks { get; set; }
-        public DbSet<StockItem> StockItems { get; set; }
+    
+        public DbSet<StockItemMaterial> StockItemMaterials { get; set; }
+        
+        public DbSet<StockItemEquipment> StockItemEquipments { get; set; }
+
         public DbSet<Solicitation> Solicitations { get; set; }
+       
         public DbSet<SolicitationItem> SolicitationItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -28,9 +34,6 @@ namespace StockTracking.Data
 
             builder.Entity<Stock>()
                 .HasAlternateKey(e => e.Name);
-
-            builder.Entity<StockItem>()
-                .HasAlternateKey(e => e.Code);
 
             base.OnModelCreating(builder);
         }

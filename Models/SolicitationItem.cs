@@ -6,7 +6,7 @@
 
         public int RequiredQuantity { get; set; }
 
-        public int SolicitationId { get; set; }
+        public long SolicitationId { get; set; }
         
         public Solicitation Solicitation { get; set; }
 

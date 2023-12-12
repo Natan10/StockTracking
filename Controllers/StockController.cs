@@ -43,7 +43,6 @@ public class StockController : ControllerBase
         return BadRequest(response);
     }
 
-   
     
     [HttpPost]
     [Route("/[controller]/CreateStockItemEquipment")]
@@ -51,7 +50,7 @@ public class StockController : ControllerBase
     {
         if(!ModelState.IsValid)
         {
-            var badRequestError = new ServiceResponse<StockItemDTO>
+            var badRequestError = new ServiceResponse<StockItemEquipmentDTO>
             {
                 Success = false,
                 Errors = ModelState.Values.SelectMany(e => e.Errors).Select(e => e.ErrorMessage)
@@ -70,11 +69,11 @@ public class StockController : ControllerBase
 
     [HttpPost]
     [Route("/[controller]/CreateStockItemMaterial")]
-    public async Task<ActionResult<ServiceResponse<StockItemEquipmentDTO>>> CreateStockItemMaterial(CreateStockItemMaterialDTO newMaterial)
+    public async Task<ActionResult<ServiceResponse<StockItemMaterialDTO>>> CreateStockItemMaterial(CreateStockItemMaterialDTO newMaterial)
     {
         if (!ModelState.IsValid)
         {
-            var badRequestError = new ServiceResponse<StockItemDTO>
+            var badRequestError = new ServiceResponse<StockItemMaterialDTO>
             {
                 Success = false,
                 Errors = ModelState.Values.SelectMany(e => e.Errors).Select(e => e.ErrorMessage)
@@ -123,10 +122,10 @@ public class StockController : ControllerBase
 
     
     [HttpDelete]
-    [Route("/[controller]/DeleteStockItem/{stockItemId:long}")]
-    public async Task<ActionResult<ServiceResponse<bool>>> DeleteStockItem(int stockItemId, [FromQuery(Name = "type")] EStockItemType type)
+    [Route("/[controller]/DeleteStockItem/{stockId}/{stockItemId}")]
+    public async Task<ActionResult<ServiceResponse<bool>>> DeleteStockItem(long stockId,long stockItemId, [FromQuery(Name = "type")] EStockItemType type)
     {
-        var response = await _stockService.DeleteStockItem(stockItemId, type);
+        var response = await _stockService.DeleteStockItem(stockId, stockItemId, type);
 
         if (response.Success)
         {
@@ -139,7 +138,7 @@ public class StockController : ControllerBase
     
     [HttpGet]
     [Route("/[controller]/GetAllMaterials")]
-    public async Task<ActionResult<Pagination<StockItemDTO>>> GetAllMaterials([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<Pagination<StockItemMaterialDTO>>> GetAllMaterials([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
     {
         var response = await _stockService.GetAllMaterials(currentPage, pageSize);
 
@@ -148,7 +147,7 @@ public class StockController : ControllerBase
 
     [HttpGet]
     [Route("/[controller]/GetAllEquipments")]
-    public async Task<ActionResult<Pagination<StockItemDTO>>> GetAllEquipments([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<Pagination<StockItemEquipmentDTO>>> GetAllEquipments([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
     {
         var response = await _stockService.GetAllEquipments(currentPage, pageSize);
 
@@ -170,10 +169,10 @@ public class StockController : ControllerBase
         return NotFound(response);
     }
 
-    [HttpGet("/[controller]/GetStockItemEquipmentById/{stockItemId:long}")]
-    public async Task<ActionResult<ServiceResponse<StockItemMaterialDTO>>> GetStockItemEquipmentById(int stockItemId)
+    [HttpGet("/[controller]/GetStockItemEquipmentById/{stockId}/{stockItemId}")]
+    public async Task<ActionResult<ServiceResponse<StockItemMaterialDTO>>> GetStockItemEquipmentById(int stockId, int stockItemId)
     {
-        var response = await _stockService.GetStockEquipmentByParams(stockItemId);
+        var response = await _stockService.GetStockEquipmentByParams(stockId,stockItemId);
 
         if (response.Success)
         {
@@ -181,6 +180,20 @@ public class StockController : ControllerBase
         }
 
         return NotFound(response);
+    }
+
+
+    [HttpPost("/[controller]/MoveStockItem")]
+    public async Task<ActionResult<ServiceResponse<object>>> MoveStockItem([FromBody] MoveStockItemDTO payload)
+    {
+        var response = await _stockService.MoveStockItem(payload);
+
+        if (response.Success)
+        {
+            return NoContent();
+        }
+
+        return BadRequest(response);
     }
 
 }

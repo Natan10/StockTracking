@@ -14,18 +14,19 @@ public interface IStockService
 
     public Task<ServiceResponse<StockItemMaterialDTO>> CreateStockItemMaterial(CreateStockItemMaterialDTO newStockItem);
 
-    public Task<ServiceResponse<StockItemEquipmentDTO>> UpdateStockItemEquipment(int stockItemId, UpdateStockItemEquipmentDTO stockItem);
+    public Task<ServiceResponse<StockItemEquipmentDTO>> UpdateStockItemEquipment(long stockId, UpdateStockItemEquipmentDTO stockItem);
 
-    public Task<ServiceResponse<StockItemMaterialDTO>> UpdateStockItemMaterial(int stockItemId, UpdateStockItemMaterialDTO stockItem);
+    public Task<ServiceResponse<StockItemMaterialDTO>> UpdateStockItemMaterial(long stockItemId, UpdateStockItemMaterialDTO stockItem);
 
+    public Task<ServiceResponse<bool>> DeleteStockItem(long stockId, long stockItemId, EStockItemType type);
 
-    public Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId, EStockItemType type);
+    public Task<ServiceResponse<StockItemEquipmentDTO>> GetStockEquipmentByParams(long stockId, long stockItemId);
 
-    public Task<ServiceResponse<StockItemEquipmentDTO>> GetStockEquipmentByParams(int stockItemId);
-
-    public Task<ServiceResponse<StockItemMaterialDTO>> GetStockMaterialByParams(int stockItemId);
+    public Task<ServiceResponse<StockItemMaterialDTO>> GetStockMaterialByParams(long stockItemId);
 
     public Task<Pagination<StockItemEquipmentDTO>> GetAllEquipments(int currentPage, int numberOfRecordPerPage);
 
     public Task<Pagination<StockItemMaterialDTO>> GetAllMaterials(int currentPage, int numberOfRecordPerPage);
+
+    public Task<ServiceResponse<object>> MoveStockItem(MoveStockItemDTO payload);
 }

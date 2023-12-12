@@ -5,7 +5,10 @@ namespace StockTracking.Repositories.Interfaces;
 
 public interface IStockRepository
 {
+    public Task<Stock> GetStockById(long id);
+
     public Task<Stock> CreateStock(CreateStockDTO stock);
+    
     public Task DeleteStock(long stockId);
 
     public Task<StockItemEquipment> CreateStockItemEquipment(StockItemEquipment newStockItem);
@@ -16,9 +19,9 @@ public interface IStockRepository
 
     public Task<StockItemMaterial> UpdateStockItemMaterial(long stockItemId, object updateStockItem);
 
-    public Task DeleteStockItem(long stockItemId, EStockItemType type);
+    public Task DeleteStockItem(long stockId, long stockItemId, EStockItemType type);
 
-    public Task<StockItemEquipment> GetStockEquipmentByParams(long stockItemId);
+    public Task<StockItemEquipment> GetStockEquipmentByParams(long stockId, long stockItemId);
 
     public Task<StockItemMaterial> GetStockMaterialByParams(long stockItemId);
 

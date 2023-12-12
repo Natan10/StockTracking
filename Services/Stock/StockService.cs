@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-
 using StockTracking.DTOs;
 using StockTracking.DTOs.Stock;
 using StockTracking.Models;
+using StockTracking.Repositories.Exceptions;
 using StockTracking.Repositories.Interfaces;
 using StockTracking.Services.Stock.Interfaces;
 
@@ -112,7 +112,7 @@ public class StockService : IStockService
     }
 
 
-    public async Task<ServiceResponse<StockItemEquipmentDTO>> UpdateStockItemEquipment(int stockItemId, UpdateStockItemEquipmentDTO stockItem)
+    public async Task<ServiceResponse<StockItemEquipmentDTO>> UpdateStockItemEquipment(long stockItemId, UpdateStockItemEquipmentDTO stockItem)
     {
         var serviceResponse = new ServiceResponse<StockItemEquipmentDTO>();
         try
@@ -136,7 +136,7 @@ public class StockService : IStockService
         }
     }
 
-    public async Task<ServiceResponse<StockItemMaterialDTO>> UpdateStockItemMaterial(int stockItemId, UpdateStockItemMaterialDTO stockItem)
+    public async Task<ServiceResponse<StockItemMaterialDTO>> UpdateStockItemMaterial(long stockItemId, UpdateStockItemMaterialDTO stockItem)
     {
         var serviceResponse = new ServiceResponse<StockItemMaterialDTO>();
         try
@@ -162,12 +162,12 @@ public class StockService : IStockService
         }
     }
 
-    public async Task<ServiceResponse<bool>> DeleteStockItem(int stockItemId, EStockItemType type)
+    public async Task<ServiceResponse<bool>> DeleteStockItem(long stockId, long stockItemId, EStockItemType type)
     {
         var serviceResponse = new ServiceResponse<bool>();
         try
         {
-            await _stockRepository.DeleteStockItem(stockItemId, type);
+            await _stockRepository.DeleteStockItem(stockId, stockItemId, type);
             serviceResponse.Success = true;
             return serviceResponse;
         } catch(Exception ex)
@@ -209,12 +209,12 @@ public class StockService : IStockService
     }
 
 
-    public async Task<ServiceResponse<StockItemEquipmentDTO>> GetStockEquipmentByParams(int stockItemId)
+    public async Task<ServiceResponse<StockItemEquipmentDTO>> GetStockEquipmentByParams(long stockId, long stockItemId)
     {
         var serviceResponse = new ServiceResponse<StockItemEquipmentDTO>();
         try
         {
-            var stockItem = await _stockRepository.GetStockEquipmentByParams(stockItemId);
+            var stockItem = await _stockRepository.GetStockEquipmentByParams(stockId,stockItemId);
 
             serviceResponse.Success = true;
             serviceResponse.Data = _mapper.Map<StockItemEquipmentDTO>(stockItem);
@@ -227,7 +227,7 @@ public class StockService : IStockService
         }
     }
 
-    public async Task<ServiceResponse<StockItemMaterialDTO>> GetStockMaterialByParams(int stockItemId)
+    public async Task<ServiceResponse<StockItemMaterialDTO>> GetStockMaterialByParams(long stockItemId)
     {
         var serviceResponse = new ServiceResponse<StockItemMaterialDTO>();
         try
@@ -238,6 +238,54 @@ public class StockService : IStockService
             serviceResponse.Data = _mapper.Map<StockItemMaterialDTO>(stockItem);
 
             return serviceResponse;
+        }
+        catch (Exception ex)
+        {
+            serviceResponse.Errors = new[] { ex.Message };
+            return serviceResponse;
+        }
+    }
+
+    public async Task<ServiceResponse<object>> MoveStockItem(MoveStockItemDTO payload)
+    {
+        var serviceResponse = new ServiceResponse<object>();
+        try
+        {
+            if(payload.FromStockId == payload.ToStockId)
+            {
+                throw new Exception("O estoque de origem não pode ser igual ao estoque de destino");
+            }
+
+            var originStock = await _stockRepository.GetStockById(payload.FromStockId) ?? throw new NotFoundException("O Estoque de origem não existe");
+            var destinyStock = await _stockRepository.GetStockById(payload.ToStockId) ?? throw new NotFoundException("O Estoque de destino não existe");
+
+            StockItem itemOriginStock = payload.Type == EStockItemType.EQUIPMENT ?
+                originStock.GetStockItemEquipmentBySerial(payload.Identifier) ?? throw new NotFoundException("Equipamento não encontrado no estoque") :
+               originStock.GetStockItemMaterialByCode(payload.Identifier) ?? throw new NotFoundException("Material não encontrado no estoque");
+
+            if (itemOriginStock.Quantity < payload.Quantity)
+            {
+                throw new Exception($"Estoque não possui a quantidade solicitada para o item");
+            }
+            
+
+            StockItem itemDestinyStock = payload.Type == EStockItemType.EQUIPMENT ?
+                destinyStock.GetStockItemEquipmentBySerial(payload.Identifier) : destinyStock.GetStockItemMaterialByCode(payload.Identifier) ;
+
+            var errorMessage = @$"{(payload.Type == EStockItemType.MATERIAL ? "Material" : "Equipamento")} não encontrado no estoque de destino, realize uma nova entrada para continuar a operação.";
+            if(itemDestinyStock == null)
+            {
+                throw new NotFoundException(errorMessage);
+            }
+
+            itemOriginStock.DecreaseQuantity(payload.Quantity);
+            itemDestinyStock.IncreaseQuantity(payload.Quantity);
+
+            await _stockRepository.UpdateStockItemEquipment(itemOriginStock.Id, itemOriginStock);
+            await _stockRepository.UpdateStockItemEquipment(itemDestinyStock.Id, itemDestinyStock);
+          
+            serviceResponse.Success = true;
+            return serviceResponse; 
         }
         catch (Exception ex)
         {

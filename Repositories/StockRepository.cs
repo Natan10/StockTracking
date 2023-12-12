@@ -16,6 +16,16 @@ public class StockRepository : IStockRepository
     {
         _context = context;
     }
+    
+    public async Task<Stock> GetStockById(long id)
+    {
+        var stock = await _context.Stocks
+            .Include(e => e.StockItemEquipments)
+            .Include(e => e.StockItemMaterials)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        return stock;
+    }
 
     public async Task<Stock> CreateStock(CreateStockDTO newStock)
     {
@@ -84,24 +94,29 @@ public class StockRepository : IStockRepository
         return stockItem;
     }
    
-    public async Task DeleteStockItem(long stockItemId, EStockItemType type)
+    public async Task DeleteStockItem(long stockId, long stockItemId, EStockItemType type)
     {
         if(type == EStockItemType.MATERIAL)
         {
-            var stockItemMaterial = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
+            var stockItemMaterial = await _context.StockItemMaterials.FirstOrDefaultAsync(e => e.Id == stockItemId && e.StockId == stockId) ?? throw new NotFoundException("Item não encontrado no estoque");
             _context.StockItemMaterials.Remove(stockItemMaterial);
         } else
         {
-            var stockItemEquipment = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Item não encontrado no estoque");
+            var stockItemEquipment = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId && e.StockId == stockId) ?? throw new NotFoundException("Item não encontrado no estoque");
             _context.StockItemEquipments.Remove(stockItemEquipment);
         }
 
         await _context.SaveChangesAsync();
     }
 
-    public async Task<StockItemEquipment> GetStockEquipmentByParams(long stockItemId)
+    public async Task<StockItemEquipment> GetStockEquipmentByParams(long stockId, long stockItemId)
     {
-        var stockItem = await _context.StockItemEquipments.FirstOrDefaultAsync(e => e.Id == stockItemId) ?? throw new NotFoundException("Equipamento não encontrado no estoque");
+        var stock = await _context.Stocks
+            .Include(e => e.StockItemEquipments)
+            .FirstOrDefaultAsync(e => e.Id == stockId) ?? throw new NotFoundException("Estoque não encontrado no estoque");
+
+        var stockItem = stock.StockItemEquipments.FirstOrDefault(e => e.Id == stockItemId) ?? throw new NotFoundException("Equipamento não encontrado no estoque");
+
         return stockItem;
     }
 

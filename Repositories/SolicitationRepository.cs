@@ -51,8 +51,9 @@ namespace StockTracking.Repositories
 
         public async Task<Solicitation> CreateSolicitation(Solicitation newSolicitation)
         {
-            var solicitationStockItems = new List<StockItem>();
+            var solicitationStockItems = new List<object>();
 
+            /*
             foreach(var item in newSolicitation.SolicitationItems)
             {
                 var stockItem = await _context.StockItems
@@ -60,6 +61,7 @@ namespace StockTracking.Repositories
                     throw new NotFoundException("Item não encontrado no estoque");
                 solicitationStockItems.Add(stockItem);
             }
+            */
 
             _context.Solicitations.Add(newSolicitation);
 

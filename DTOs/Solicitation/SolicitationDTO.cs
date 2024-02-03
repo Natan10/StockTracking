@@ -17,6 +17,8 @@ namespace StockTracking.DTOs.Solicitation
 
         public EmployeeDTO? Reviewer { get; set; }
 
+        public long StockId {  get; set; }
+
         public List<SolicitationItemDTO> SolicitationItems { get; set; }
 
         public DateTime? CreatedAt { get; set; }

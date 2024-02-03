@@ -10,8 +10,12 @@
         
         public Solicitation Solicitation { get; set; }
 
+        public long? EquipmentId { get; set; }
+
         public StockItemEquipment? Equipment { get; set; }
 
+        public long? MaterialId {  get; set; }
+        
         public StockItemMaterial? Material { get; set; }
     }
 }

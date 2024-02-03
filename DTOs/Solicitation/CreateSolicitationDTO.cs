@@ -10,6 +10,8 @@ namespace StockTracking.DTOs.Solicitation
 
         public string? ReviewerId { get; set; }
 
+        public long StockId {  get; set; }
+
         public List<SolicitationItemDTO> SolicitationItems { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using StockTracking.Models;
-
-namespace StockTracking.DTOs.Solicitation
+﻿namespace StockTracking.DTOs.Solicitation
 {
     public class SolicitationItemDTO
     {
@@ -8,6 +6,8 @@ namespace StockTracking.DTOs.Solicitation
 
         public int RequiredQuantity { get; set; }
 
-        public int StockItemId { get; set; }
+        public long? EquipmentId { get; set; }
+
+        public long? MaterialId { get; set; }
     }
 }

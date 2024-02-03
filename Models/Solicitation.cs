@@ -12,6 +12,10 @@
 
         public Employee? Reviewer { get; set; }
 
+        public long StockId { get; set; }
+        
+        public Stock Stock { get; set; }
+
         public List<SolicitationItem> SolicitationItems { get; set; }
     }
 }

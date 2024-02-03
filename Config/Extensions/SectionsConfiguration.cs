@@ -4,7 +4,7 @@
     {
         public static void AddSectionsExtension(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+            services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));
         }
     }
 }

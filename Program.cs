@@ -60,9 +60,9 @@ namespace StockTracking
                     .AddEntityFrameworkStores<DataContext>();
 
 
-            builder.Services.AddSectionsExtension(builder.Configuration);
-
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+            builder.Services.AddSectionsExtension(builder.Configuration);
 
             builder.Services.AddServicesExtension();
 

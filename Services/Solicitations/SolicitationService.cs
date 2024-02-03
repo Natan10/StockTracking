@@ -56,6 +56,7 @@ namespace StockTracking.Services.Solicitations
                     RequesterId = solicitationDTO.RequesterId,
                     ReviewerId = solicitationDTO.ReviewerId,
                     Status = solicitationDTO.Status,
+                    StockId = solicitationDTO.StockId,
                     SolicitationItems = solicitationItems
                 };
                 var createdSolicitation = await _solicitationRepository.CreateSolicitation(newSolicitation);

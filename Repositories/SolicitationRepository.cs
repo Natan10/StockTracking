@@ -1,8 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
 using StockTracking.Data;
 using StockTracking.Models;
 using StockTracking.Repositories.Exceptions;
+using StockTracking.Repositories.Interfaces;
 
 namespace StockTracking.Repositories
 {
@@ -20,10 +21,12 @@ namespace StockTracking.Repositories
     public class SolicitationRepository : ISolicitationRepository
     {
         private readonly DataContext _context;
-        
-        public SolicitationRepository(DataContext context, IMapper mapper)
+        private readonly IStockRepository _stockRepository;
+
+        public SolicitationRepository(DataContext context, IStockRepository stockRepository)
         {
             _context = context;
+            _stockRepository = stockRepository;
         }
 
 
@@ -51,28 +54,30 @@ namespace StockTracking.Repositories
 
         public async Task<Solicitation> CreateSolicitation(Solicitation newSolicitation)
         {
-            var solicitationStockItems = new List<object>();
+ 
+            var stock = await _stockRepository.GetStockById(newSolicitation.StockId) ?? throw new NotFoundException("Estoque não encontrado");
 
-            /*
-            foreach(var item in newSolicitation.SolicitationItems)
+            foreach (var solicitationItem in newSolicitation.SolicitationItems)
             {
-                var stockItem = await _context.StockItems
-                    .FirstOrDefaultAsync(e => e.Id == item.StockItemId) ?? 
-                    throw new NotFoundException("Item não encontrado no estoque");
-                solicitationStockItems.Add(stockItem);
+                if(solicitationItem.EquipmentId != null)
+                {
+                    var equipment = stock.StockItemEquipments.FirstOrDefault(e => e.Id == solicitationItem.EquipmentId) ?? throw new NotFoundException("Equipamento não encontrado no estoque");
+                }
+
+                if(solicitationItem.MaterialId != null)
+                {
+                    var material = stock.StockItemMaterials.FirstOrDefault(e => e.Id == solicitationItem.MaterialId) ?? throw new NotFoundException("Material não encontrado no estoque");
+                }
             }
-            */
 
             _context.Solicitations.Add(newSolicitation);
 
             await _context.SaveChangesAsync();
 
-            var id = newSolicitation.Id;
-
             var createdSolicitation = await _context.Solicitations
                 .Include(e => e.SolicitationItems)
                 .Include(e => e.Requester)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .FirstOrDefaultAsync(e => e.Id == newSolicitation.Id);
 
             return createdSolicitation;
         }
